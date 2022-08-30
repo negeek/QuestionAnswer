@@ -24,6 +24,11 @@ class StudentTopics(DjangoObjectType):
         fields = ('id', 'course_code', 'course_title')
 
 
+class StudentTopicInput(graphene.InputObjectType):
+    course_code = graphene.String()
+    course_title = graphene.String()
+
+
 class StudentQuestions(DjangoObjectType):
     class Meta:
         model = StudentQuestion
@@ -37,7 +42,7 @@ class CreateIndividualTopic(graphene.Mutation):
 
     @classmethod
     def mutate(cls, root, info, title):
-        topic = IndividualTopic(title=topic, owner=info.context.user)
+        topic = IndividualTopic(title=title, owner=info.context.user)
         topic.save()
         return CreateIndividualTopic(topic=topic)
 
@@ -58,37 +63,40 @@ class CreateStudentTopic(graphene.Mutation):
 
 class CreateIndividualQuestion(graphene.Mutation):
     class Arguments:
-        topic = graphene.Int(required=True)
+        topic = graphene.ID(required=True)
         question = graphene.String(required=True)
         answer = graphene.String()
     topicQuestion = graphene.Field(IndividualQuestions)
 
     @classmethod
     def mutate(cls, root, info, topic, question, answer):
-        topicQuestion = IndividualQuestions(topic=topic, question=question,
-                                            answer=answer, owner=info.context.user)
+        topicInstance = IndividualTopic.objects.get(id=topic)
+        topicQuestion = IndivdualQuestion(topic=topicInstance, question=question,
+                                          answer=answer, owner=info.context.user)
         topicQuestion.save()
         return CreateIndividualQuestion(topicQuestion=topicQuestion)
 
 
 class CreateStudentQuestion(graphene.Mutation):
     class Arguments:
-        course_code = graphene.Int(required=True)
+        course_code = graphene.ID(required=True)
         question = graphene.String(required=True)
         answer = graphene.String()
-    topicQuestion = graphene.Field(StudentQuestions)
+    courseQuestion = graphene.Field(StudentQuestions)
 
     @classmethod
     def mutate(cls, root, info, course_code, question, answer):
-        topicQuestion = StudentQuestions(course_code=course_code, question=question,
+        course_code_instance = StudentTopic.objects.get(
+            id=course_code)
+        courseQuestion = StudentQuestion(course_code=course_code_instance, question=question,
                                          answer=answer, owner=info.context.user)
-        topicQuestion.save()
-        return CreateStudentQuestion(topicQuestion=topicQuestion)
+        courseQuestion.save()
+        return CreateStudentQuestion(courseQuestion=courseQuestion)
 
 
 class MutateIndividualTopic(graphene.Mutation):
     class Arguments:
-        id = graphene.Int(required=True)
+        id = graphene.ID(required=True)
         title = graphene.String(required=True)
     topic = graphene.Field(IndividualTopics)
 
@@ -103,16 +111,17 @@ class MutateIndividualTopic(graphene.Mutation):
 
 class MutateStudentTopic(graphene.Mutation):
     class Arguments:
-        id = graphene.Int(required=True)
-        course_code = graphene.String()
-        course_title = graphene.String()
+        id = graphene.ID(required=True)
+        input = StudentTopicInput()
     course = graphene.Field(StudentTopics)
 
     @classmethod
-    def mutate(cls, root, info, course_title, id, course_code):
-        course = IndividualTopic.objects.get(id=id)
-        course.course_code = course_code
-        course.course_title = course_title
+    def mutate(cls, root, info, id, input):
+        course = StudentTopic.objects.get(id=id)
+        if input.course_code:
+            course.course_code = input.course_code
+        if input.course_title:
+            course.course_title = input.course_title
         course.owner = info.context.user
         course.save()
         return MutateStudentTopic(course=course)
@@ -132,10 +141,10 @@ class ModelQuery(graphene.ObjectType):
     individual_topics = graphene.List(IndividualTopics)
 
     individual_questions = graphene.List(
-        IndividualQuestions, topic_id=graphene.Int())
+        IndividualQuestions, topic_id=graphene.ID())
 
     student_questions = graphene.List(
-        StudentQuestions, course_code_id=graphene.Int())
+        StudentQuestions, course_code_id=graphene.ID())
     student_topics = graphene.List(StudentTopics)
 
     def resolve_individual_topics(root, info):
