@@ -35,6 +35,43 @@ class StudentQuestions(DjangoObjectType):
         fields = ('course_code', 'question', 'answer')
 
 
+class IndividualTopicNode(DjangoObjectType):
+    class Meta:
+        model = IndividualTopic
+        filter_fields = {
+            'title': ['icontains'],
+        }
+        interfaces = (relay.Node, )
+
+
+class StudentTopicNode(DjangoObjectType):
+    class Meta:
+        model = StudentTopic
+        filter_fields = {
+            'course_code': ['icontains'],
+            'course_title': ['icontains']
+        }
+        interfaces = (relay.Node, )
+
+
+class IndividualQuestionNode(DjangoObjectType):
+    class Meta:
+        model = IndivdualQuestion
+        filter_fields = {
+            'question': ['icontains'],
+        }
+        interfaces = (relay.Node, )
+
+
+class StudentQuestionNode(DjangoObjectType):
+    class Meta:
+        model = StudentQuestion
+        filter_fields = {
+            'question': ['icontains'],
+        }
+        interfaces = (relay.Node, )
+
+
 class CreateIndividualTopic(graphene.Mutation):
     class Arguments:
         title = graphene.String(required=True)
@@ -146,6 +183,17 @@ class ModelQuery(graphene.ObjectType):
     student_questions = graphene.List(
         StudentQuestions, course_code_id=graphene.ID())
     student_topics = graphene.List(StudentTopics)
+
+    #individual_topic_search = relay.Node.Field(IndividualTopicNode)
+    all_individual_topic_search = DjangoFilterConnectionField(
+        IndividualTopicNode)
+    #student_topic_search = relay.Node.Field(StudentTopicNode)
+    all_student_topic_search = DjangoFilterConnectionField(
+        StudentTopicNode)
+    all_individual_question_search = DjangoFilterConnectionField(
+        IndividualQuestionNode)
+    all_student_question_search = DjangoFilterConnectionField(
+        StudentQuestionNode)
 
     def resolve_individual_topics(root, info):
         return IndividualTopic.objects.all()
