@@ -196,13 +196,13 @@ class ModelQuery(graphene.ObjectType):
         StudentQuestionNode)
 
     def resolve_individual_topics(root, info):
-        return IndividualTopic.objects.all()
+        return IndividualTopic.objects.filter(owner=info.context.user)
 
     def resolve_individual_questions(root, info, topic_id):
-        return IndivdualQuestion.objects.filter(topic=topic_id)
+        return IndivdualQuestion.objects.filter(topic=topic_id, owner=info.context.user)
 
     def resolve_student_topics(root, info):
-        return StudentTopic.objects.all()
+        return StudentTopic.objects.filter(owner=info.context.user)
 
     def resolve_student_questions(root, info, course_code_id):
         return StudentQuestion.objects.filter(course_code=course_code_id)
