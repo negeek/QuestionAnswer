@@ -10,21 +10,25 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-ef4a%foaf+kz_(6-i!7kk(_bsfcd2mitg^j@#*lv1%wq&pp3jc'
+# SECRET_KEY = 'django-insecure-ef4a%foaf+kz_(6-i!7kk(_bsfcd2mitg^j@#*lv1%wq&pp3jc'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
+#DEBUG = True
+SECRET_KEY = os.environ.get(
+    'DJANGO_SECRET_KEY', 'django-insecure-ef4a%foaf+kz_(6-i!7kk(_bsfcd2mitg^j@#*lv1%wq&pp3jc')
+# SECURITY WARNING: don't run with debug turned on in production!
+#DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG', '') != 'False'
 ALLOWED_HOSTS = []
 
 
@@ -47,6 +51,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -86,7 +92,10 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
+if os.getcwd() == '/app':
+    import dj_database_url
+    DATABASES = {
+        'default': dj_database_url.config(default='postgres://localhost')}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -109,6 +118,9 @@ AUTHENTICATION_BACKENDS = ['graphql_auth.backends.GraphQLAuthBackend',
                            'django.contrib.auth.backends.ModelBackend', ]
 GRAPHENE = {
     "SCHEMA": "QA.schema.schema",
+    'SCHEMA_OUTPUT': 'schema.graphql',  # defaults to schema.json,
+    # Defaults to None (displays all data on a single line)
+    'SCHEMA_INDENT': 2,
     "MIDDLEWARE": ['graphql_jwt.middleware.JSONWebTokenMiddleware', ],
 
 }
