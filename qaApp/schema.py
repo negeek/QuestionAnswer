@@ -177,12 +177,22 @@ class ModelQuery(graphene.ObjectType):
 
     individual_topics = graphene.List(IndividualTopics)
 
+    all_individual_topics = graphene.List(IndividualTopics)
+
     individual_questions = graphene.List(
+        IndividualQuestions, topic_id=graphene.ID())
+
+    all_individual_questions = graphene.List(
         IndividualQuestions, topic_id=graphene.ID())
 
     student_questions = graphene.List(
         StudentQuestions, course_code_id=graphene.ID())
+
+    all_student_questions = graphene.List(
+        StudentQuestions, course_code_id=graphene.ID())
+
     student_topics = graphene.List(StudentTopics)
+    all_student_topics = graphene.List(StudentTopics)
 
     #individual_topic_search = relay.Node.Field(IndividualTopicNode)
     all_individual_topic_search = DjangoFilterConnectionField(
@@ -198,13 +208,25 @@ class ModelQuery(graphene.ObjectType):
     def resolve_individual_topics(root, info):
         return IndividualTopic.objects.filter(owner=info.context.user)
 
+    def resolve_all_individual_topics(root, info):
+        return IndividualTopic.objects.all()
+
     def resolve_individual_questions(root, info, topic_id):
         return IndivdualQuestion.objects.filter(topic=topic_id, owner=info.context.user)
+
+    def resolve_all_individual_questions(root, info, topic_id):
+        return IndivdualQuestion.objects.filter(topic=topic_id)
 
     def resolve_student_topics(root, info):
         return StudentTopic.objects.filter(owner=info.context.user)
 
+    def resolve_all_student_topics(root, info):
+        return StudentTopic.objects.all()
+
     def resolve_student_questions(root, info, course_code_id):
+        return StudentQuestion.objects.filter(course_code=course_code_id, owner=info.context.user)
+
+    def resolve_all_student_questions(root, info, course_code_id):
         return StudentQuestion.objects.filter(course_code=course_code_id)
 
 
