@@ -118,7 +118,7 @@ AUTHENTICATION_BACKENDS = ['graphql_auth.backends.GraphQLAuthBackend',
                            'django.contrib.auth.backends.ModelBackend', ]
 GRAPHENE = {
     "SCHEMA": "QA.schema.schema",
-    'SCHEMA_OUTPUT': 'schema.graphql',  # defaults to schema.json,
+    'SCHEMA_OUTPUT': 'schema.json',  # defaults to schema.json,
     # Defaults to None (displays all data on a single line)
     'SCHEMA_INDENT': 2,
     "MIDDLEWARE": ['graphql_jwt.middleware.JSONWebTokenMiddleware', ],
