@@ -1,0 +1,243 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+type CreateIndividualQuestion {
+  topicQuestion: IndividualQuestions
+}
+
+type CreateIndividualTopic {
+  topic: IndividualTopics
+}
+
+type CreateStudentQuestion {
+  courseQuestion: StudentQuestions
+}
+
+type CreateStudentTopic {
+  course: StudentTopics
+}
+
+enum CustomUserSignupAs {
+  INDIVIDUAL
+  STUDENT
+}
+
+scalar DateTime
+
+scalar ExpectedErrorType
+
+scalar GenericScalar
+
+type IndividualQuestionNode implements Node {
+  topic: IndividualTopicNode!
+  question: String!
+  answer: String!
+  id: ID!
+}
+
+type IndividualQuestionNodeConnection {
+  pageInfo: PageInfo!
+  edges: [IndividualQuestionNodeEdge]!
+}
+
+type IndividualQuestionNodeEdge {
+  node: IndividualQuestionNode
+  cursor: String!
+}
+
+type IndividualQuestions {
+  topic: IndividualTopicNode!
+  question: String!
+  answer: String!
+}
+
+type IndividualTopicNode implements Node {
+  id: ID!
+  title: String!
+  indivdualquestionSet(offset: Int, before: String, after: String, first: Int, last: Int, question_Icontains: String): IndividualQuestionNodeConnection!
+}
+
+type IndividualTopicNodeConnection {
+  pageInfo: PageInfo!
+  edges: [IndividualTopicNodeEdge]!
+}
+
+type IndividualTopicNodeEdge {
+  node: IndividualTopicNode
+  cursor: String!
+}
+
+type IndividualTopics {
+  id: ID!
+  title: String!
+}
+
+type MutateIndividualTopic {
+  topic: IndividualTopics
+}
+
+type MutateStudentTopic {
+  course: StudentTopics
+}
+
+type Mutation {
+  createIndividualTopic(title: String!): CreateIndividualTopic
+  updateIndividualTopic(id: ID!, title: String!): MutateIndividualTopic
+  createStudentTopic(courseCode: String!, courseTitle: String!): CreateStudentTopic
+  updateStudentTopic(id: ID!, input: StudentTopicInput): MutateStudentTopic
+  createStudentQuestion(answer: String, courseCode: ID!, question: String!): CreateStudentQuestion
+  createIndividualQuestion(answer: String, question: String!, topic: ID!): CreateIndividualQuestion
+  register(username: String!, signupAs: String!, password1: String!, password2: String!): Register
+  verifyAccount(token: String!): VerifyAccount
+  tokenAuth(password: String!, username: String): ObtainJSONWebToken
+  refreshToken(refreshToken: String!): RefreshToken
+  revokeToken(refreshToken: String!): RevokeToken
+}
+
+interface Node {
+  id: ID!
+}
+
+type ObtainJSONWebToken {
+  token: String
+  success: Boolean
+  errors: ExpectedErrorType
+  user: UserNode
+  unarchiving: Boolean
+  refreshToken: String
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+
+type Query {
+  individualTopics: [IndividualTopics]
+  allIndividualTopics: [IndividualTopics]
+  individualQuestions(topicId: ID): [IndividualQuestions]
+  allIndividualQuestions(topicId: ID): [IndividualQuestions]
+  studentQuestions(courseCodeId: ID): [StudentQuestions]
+  allStudentQuestions(courseCodeId: ID): [StudentQuestions]
+  studentTopics: [StudentTopics]
+  allStudentTopics: [StudentTopics]
+  allIndividualTopicSearch(offset: Int, before: String, after: String, first: Int, last: Int, title_Icontains: String): IndividualTopicNodeConnection
+  allStudentTopicSearch(offset: Int, before: String, after: String, first: Int, last: Int, courseCode_Icontains: String, courseTitle_Icontains: String): StudentTopicNodeConnection
+  allIndividualQuestionSearch(offset: Int, before: String, after: String, first: Int, last: Int, question_Icontains: String): IndividualQuestionNodeConnection
+  allStudentQuestionSearch(offset: Int, before: String, after: String, first: Int, last: Int, question_Icontains: String): StudentQuestionNodeConnection
+  user(id: ID!): UserNode
+  users(offset: Int, before: String, after: String, first: Int, last: Int, email: String, username: String, username_Icontains: String, username_Istartswith: String, isActive: Boolean, status_Archived: Boolean, status_Verified: Boolean, status_SecondaryEmail: String): UserNodeConnection
+  me: UserNode
+}
+
+type RefreshToken {
+  token: String
+  payload: GenericScalar
+  success: Boolean
+  errors: ExpectedErrorType
+  refreshToken: String
+}
+
+type Register {
+  success: Boolean
+  errors: ExpectedErrorType
+  refreshToken: String
+  token: String
+}
+
+type RevokeToken {
+  revoked: Int
+  success: Boolean
+  errors: ExpectedErrorType
+}
+
+type StudentQuestionNode implements Node {
+  courseCode: StudentTopicNode!
+  question: String!
+  answer: String!
+  id: ID!
+}
+
+type StudentQuestionNodeConnection {
+  pageInfo: PageInfo!
+  edges: [StudentQuestionNodeEdge]!
+}
+
+type StudentQuestionNodeEdge {
+  node: StudentQuestionNode
+  cursor: String!
+}
+
+type StudentQuestions {
+  courseCode: StudentTopicNode!
+  question: String!
+  answer: String!
+}
+
+input StudentTopicInput {
+  courseCode: String
+  courseTitle: String
+}
+
+type StudentTopicNode implements Node {
+  id: ID!
+  courseCode: String!
+  courseTitle: String!
+  code(offset: Int, before: String, after: String, first: Int, last: Int, question_Icontains: String): StudentQuestionNodeConnection!
+}
+
+type StudentTopicNodeConnection {
+  pageInfo: PageInfo!
+  edges: [StudentTopicNodeEdge]!
+}
+
+type StudentTopicNodeEdge {
+  node: StudentTopicNode
+  cursor: String!
+}
+
+type StudentTopics {
+  id: ID!
+  courseCode: String!
+  courseTitle: String!
+}
+
+type UserNode implements Node {
+  id: ID!
+  lastLogin: DateTime
+  username: String!
+  firstName: String!
+  lastName: String!
+  email: String!
+  isStaff: Boolean!
+  isActive: Boolean!
+  dateJoined: DateTime!
+  signupAs: CustomUserSignupAs!
+  individualtopicSet(offset: Int, before: String, after: String, first: Int, last: Int, title_Icontains: String): IndividualTopicNodeConnection!
+  indivdualquestionSet(offset: Int, before: String, after: String, first: Int, last: Int, question_Icontains: String): IndividualQuestionNodeConnection!
+  studenttopicSet(offset: Int, before: String, after: String, first: Int, last: Int, courseCode_Icontains: String, courseTitle_Icontains: String): StudentTopicNodeConnection!
+  studentquestionSet(offset: Int, before: String, after: String, first: Int, last: Int, question_Icontains: String): StudentQuestionNodeConnection!
+  pk: Int
+  archived: Boolean
+  verified: Boolean
+  secondaryEmail: String
+}
+
+type UserNodeConnection {
+  pageInfo: PageInfo!
+  edges: [UserNodeEdge]!
+}
+
+type UserNodeEdge {
+  node: UserNode
+  cursor: String!
+}
+
+type VerifyAccount {
+  success: Boolean
+  errors: ExpectedErrorType
+}
